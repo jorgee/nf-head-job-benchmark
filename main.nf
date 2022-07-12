@@ -3,6 +3,7 @@ nextflow.enable.dsl=2
 params.index = "$baseDir/index-full.txt"
 params.upload_count = 4
 params.upload_size = '10G'
+params.upload_bucket = 's3://nextflow-ci-dev/data/'
 
 
 workflow {
@@ -41,7 +42,7 @@ process bar {
 }
 
 process uploadRandomFile {
-  publishDir "s3://nextflow-ci/data/"
+  publishDir params.upload_bucket
   output:
   path '*.data'
   """
