@@ -4,18 +4,18 @@ params.index = "$baseDir/index-full.txt"
 params.upload_count = 4
 params.upload_size = '10G'
 
-channel
-  .fromPath(params.index)
-  .splitText() 
-  .map { it.trim() }
-  .set { files_ch }
-
 
 workflow {
   download()
+  upload()
 }
 
 workflow download {
+  channel.fromPath(params.index) \
+    | splitText \
+    | map { it.trim() } \
+    | set { files_ch }
+
   foo(files_ch)
   bar(files_ch)
 }
@@ -42,11 +42,9 @@ process bar {
 
 process uploadRandomFile {
   publishDir "s3://nextflow-ci/data/"
-  input:
-  val index
   output:
   path '*.data'
   """
-  dd if=/dev/zero of=myfile-${index}.data bs=1 count=0 seek=${params.upload_size}
+  dd if=/dev/zero of=myfile-${params.upload_size}.data bs=1 count=0 seek=${params.upload_size}
   """
 }
