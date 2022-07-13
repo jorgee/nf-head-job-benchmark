@@ -31,8 +31,8 @@ process upload {
     tag { "${n}, ${size}" }
 
     input:
-         each val(n)
-         each val(size)
+         each n
+         each size
 
     script:
     """
