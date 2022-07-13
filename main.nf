@@ -43,8 +43,10 @@ process bar {
 
 process uploadRandomFile {
   publishDir params.upload_bucket
+  input:
+    val index
   output:
-  path '*.data'
+    path '*.data'
   """
   dd if=/dev/zero of=myfile-${params.upload_size}.data bs=1 count=0 seek=${params.upload_size}
   """
