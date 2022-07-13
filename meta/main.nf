@@ -47,8 +47,8 @@ workflow {
     }
 
     if ( params.upload ) {
-        ch_counts = Channel.fromList(upload_counts)
-        ch_sizes = Channel.fromList(upload_sizes)
+        ch_counts = Channel.fromList(params.upload_counts)
+        ch_sizes = Channel.fromList(params.upload_sizes)
 
         upload(ch_counts, ch_sizes)
     }
