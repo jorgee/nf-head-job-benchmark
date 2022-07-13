@@ -20,6 +20,9 @@ process download {
     input:
         val profile
 
+    output:
+        val profile
+
     script:
     """
     nextflow run ${params.pipeline} -entry download -profile ${profile}
@@ -33,6 +36,10 @@ process upload {
     input:
          each val(n)
          each val(size)
+
+    output:
+         val n
+         val size
 
     script:
     """
