@@ -15,6 +15,8 @@ params.upload_sizes = ['100M', '1G', '10G']
 
 
 process download {
+    tag profile
+
     input:
         val profile
 
@@ -26,9 +28,11 @@ process download {
 
 
 process upload {
+    tag "${n}, ${size}"
+
     input:
-        each val(n)
-        each val(size)
+         each val(n)
+         each val(size)
 
     script:
     """
