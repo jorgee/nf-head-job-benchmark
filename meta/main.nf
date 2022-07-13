@@ -1,5 +1,6 @@
 
 params.pipeline = 'bentsherman/nf-s3-stress-stage'
+params.memory_values = [2.GB, 4.GB, 8.GB, 16.GB]
 
 params.download = true
 params.download_profiles = [
