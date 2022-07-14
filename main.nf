@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 
 params.meta_pipeline = 'bentsherman/nf-head-job-benchmark'
-params.meta_memory_values = [1.GB, 2.GB, 4.GB, 8.GB, 16.GB]
+params.meta_memory_values = [2.GB, 4.GB, 8.GB, 16.GB]
 
 params.meta_download = false
 params.meta_download_profiles = [
@@ -62,6 +62,10 @@ process download_meta {
 
     script:
     """
+    # print java memory options
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\|RAM'
+
+    # run pipeline
     nextflow run ${params.meta_pipeline} -latest -entry download -profile ${profile}
     """
 }
@@ -96,6 +100,10 @@ process upload_meta {
 
     script:
     """
+    # print java memory options
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\|RAM'
+
+    # run pipeline
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
     """
 }
