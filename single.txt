@@ -1,1 +1,0 @@
-s3://nextflow-ci/petagene/example_data/real.fastq.gz
