@@ -63,7 +63,7 @@ process download_meta {
     script:
     """
     # print java memory options
-    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\|RAM'
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
 
     # run pipeline
     nextflow run ${params.meta_pipeline} -latest -entry download -profile ${profile}
@@ -101,7 +101,7 @@ process upload_meta {
     script:
     """
     # print java memory options
-    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\|RAM'
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
 
     # run pipeline
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
