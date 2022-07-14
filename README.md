@@ -1,11 +1,16 @@
-# nf-stress-stage
+# nf-head-job-benchmark
 
-Bare minimal pipeline script that stages some dozens 
-of sample files from S3 to the local storage. 
+This Nextflow pipeline can be used to benchmark the resource usage of the Nextflow head job.
 
-### Usage 
+Benchmark tasks include:
+- `--meta_download`: download files from S3
+- `--meta_upload`: upload files to S3
+- `--meta_dataproc`: (WIP) process large dataset with native code
 
+## Usage 
+
+Refer to `main.nf` for the list of available meta-pipeline parameters.
+
+```bash
+nextflow run bentsherman/nf-head-job-benchmark [--meta_download] [--meta_upload]
 ```
-nextflow run pditommaso/nf-s3-stress-stage [--index <FILE NAME>]
-```
-
