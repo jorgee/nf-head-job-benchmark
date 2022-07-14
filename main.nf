@@ -62,7 +62,7 @@ process download_meta {
 
     script:
     """
-    nextflow run ${params.meta_pipeline} -entry download -profile ${profile}
+    nextflow run ${params.meta_pipeline} -latest -entry download -profile ${profile}
     """
 }
 
@@ -78,7 +78,7 @@ process upload_random_file {
 
     script:
     """
-    dd if=/dev/zero of=myfile-${params.upload_size}.data bs=1 count=0 seek=${params.upload_size}
+    dd if=/dev/zero of=upload-${params.upload_size}-${index}.data bs=1 count=0 seek=${params.upload_size}
     """
 }
 
@@ -96,7 +96,7 @@ process upload_meta {
 
     script:
     """
-    nextflow run ${params.meta_pipeline} -entry upload --upload_count ${n} --upload_size '${size}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
     """
 }
 
