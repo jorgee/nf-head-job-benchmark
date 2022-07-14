@@ -5,11 +5,11 @@ nextflow.enable.dsl=2
 params.meta_pipeline = 'bentsherman/nf-head-job-benchmark'
 params.meta_memory_values = [1.GB, 2.GB, 4.GB, 8.GB, 16.GB]
 
-params.meta_download = true
+params.meta_download = false
 params.meta_download_profiles = [
     "index_small",
-    // "index_medium",
-    // "index_large"
+    "index_medium",
+    "index_large"
 ]
 
 params.meta_upload = false
