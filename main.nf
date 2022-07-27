@@ -82,7 +82,7 @@ process upload_random_file {
 
     script:
     """
-    dd if=/dev/zero of=upload-${params.upload_size}-${index}.data bs=1 count=0 seek=${params.upload_size}
+    dd if=/dev/random of=upload-${params.upload_size}-${index}.data bs=1 count=0 seek=${params.upload_size}
     """
 }
 
