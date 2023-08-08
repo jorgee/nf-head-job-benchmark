@@ -16,6 +16,7 @@ params.meta_download_profiles = [
 params.meta_upload = false
 params.meta_upload_counts = [1, 4, 10]
 params.meta_upload_sizes = ['100M', '1G', '10G']
+params.meta_upload_trials = 1
 
 params.download_index = "$baseDir/index-small.txt"
 
@@ -88,6 +89,7 @@ process upload_meta {
         each n
         each size
         each virtual_threads
+        each trial
 
     script:
     """
@@ -112,7 +114,8 @@ workflow {
         ch_counts = Channel.fromList(params.meta_upload_counts)
         ch_sizes = Channel.fromList(params.meta_upload_sizes)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
+        ch_trials = Channel.of(1 .. params.meta_upload_trials)
 
-        upload_meta(ch_counts, ch_sizes, ch_virtual_threads)
+        upload_meta(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
     }
 }
