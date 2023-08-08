@@ -4,12 +4,13 @@ nextflow.enable.dsl=2
 
 params.meta_pipeline = 'bentsherman/nf-head-job-benchmark'
 params.meta_memory_values = [2.GB, 4.GB, 8.GB, 16.GB]
+params.meta_virtual_threads_values = [false]
 
 params.meta_download = false
 params.meta_download_profiles = [
-    "index_small",
-    "index_medium",
-    "index_large"
+    'index_small',
+    'index_medium',
+    'index_large'
 ]
 
 params.meta_upload = false
@@ -20,20 +21,10 @@ params.download_index = "$baseDir/index-small.txt"
 
 params.upload_count = 4
 params.upload_size = '10G'
-params.upload_bucket = 's3://nextflow-ci-dev/data/'
+params.upload_target = 's3://nextflow-ci-dev/data/'
 
 
-process download_foo {
-    input:
-        path x
-
-    script:
-    """
-    ls -lah
-    """
-}
-
-process download_bar {
+process download_file {
     input:
         path x
 
@@ -44,13 +35,10 @@ process download_bar {
 }
 
 workflow download {
-    Channel.fromPath(params.download_index) \
-      | splitText \
-      | map { it.trim() } \
-      | set { ch_files }
-
-    download_foo(ch_files)
-    download_bar(ch_files)
+    Channel.fromPath(params.download_index)
+      | splitText
+      | map { it.trim() }
+      | download_file
 }
 
 process download_meta {
@@ -72,31 +60,34 @@ process download_meta {
 
 
 process upload_random_file {
-    publishDir params.upload_bucket
+    publishDir params.upload_target
 
     input:
         val index
+        val size
 
     output:
         path '*.data'
 
     script:
     """
-    dd if=/dev/random of=upload-${params.upload_size}-${index}.data bs=1 count=0 seek=${params.upload_size}
+    dd if=/dev/random of=upload-${size}-${index}.data bs=1 count=0 seek=${size}
     """
 }
 
 workflow upload {
-    Channel.of(1..params.upload_count) | upload_random_file
+    indices = Channel.of(1..params.upload_count)
+    upload_random_file(indices, params.upload_size)
 }
 
 process upload_meta {
     label 'meta'
-    tag { "${n}, ${size}" }
+    tag { "n=${n}, size=${size}, vt=${virtual_threads}" }
 
     input:
-         each n
-         each size
+        each n
+        each size
+        each virtual_threads
 
     script:
     """
@@ -104,6 +95,7 @@ process upload_meta {
     java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
 
     # run pipeline
+    export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
     """
 }
@@ -119,7 +111,8 @@ workflow {
     if ( params.meta_upload ) {
         ch_counts = Channel.fromList(params.meta_upload_counts)
         ch_sizes = Channel.fromList(params.meta_upload_sizes)
+        ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
 
-        upload_meta(ch_counts, ch_sizes)
+        upload_meta(ch_counts, ch_sizes, ch_virtual_threads)
     }
 }
