@@ -22,7 +22,7 @@ params.download_index = "$baseDir/index-small.txt"
 
 params.upload_count = 4
 params.upload_size = '10G'
-params.upload_target = 's3://nextflow-ci-dev/data/'
+params.upload_prefix = 's3://nextflow-ci-dev/data'
 
 
 process download_file {
@@ -61,7 +61,7 @@ process download_meta {
 
 
 process upload_random_file {
-    publishDir params.upload_target
+    publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
 
     input:
         val index
