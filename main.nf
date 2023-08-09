@@ -96,6 +96,9 @@ process upload_meta {
     # print java memory options
     java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
 
+    # force virtual threads setting to be applied
+    rm -f /.nextflow/launch-classpath
+
     # run pipeline
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
