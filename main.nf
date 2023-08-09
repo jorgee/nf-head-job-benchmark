@@ -22,7 +22,7 @@ params.download_index = "$baseDir/index-small.txt"
 
 params.upload_count = 4
 params.upload_size = '10G'
-params.upload_prefix = 's3://nextflow-ci-dev/data'
+params.upload_prefix = 's3://nf-ireland/data'
 
 
 process download_file {
