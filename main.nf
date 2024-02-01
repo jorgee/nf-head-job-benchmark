@@ -27,7 +27,7 @@ params.upload_prefix = 's3://nf-ireland/data'
 
 process download_file {
     input:
-        path x
+    path x
 
     script:
     """
@@ -47,7 +47,7 @@ process download_meta {
     tag { profile }
 
     input:
-        val profile
+    val profile
 
     script:
     """
@@ -64,21 +64,24 @@ process upload_random_file {
     publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
 
     input:
-        val index
-        val size
+    val block
+    val count
+    val size
 
     output:
-        path '*.data'
+    path '*.data'
 
     script:
     """
-    dd if=/dev/random of=upload-${size}-${index}.data bs=1 count=0 seek=${size}
+    for index in `seq $count` ; do
+        dd if=/dev/random of=upload-${size}-${block}-\${index}.data bs=1 count=0 seek=${size}
+    done
     """
 }
 
 workflow upload {
-    indices = Channel.of(1..params.upload_count)
-    upload_random_file(indices, params.upload_size)
+    blocks = Channel.of(1..10)
+    upload_random_file(blocks, params.upload_count.intdiv(10), params.upload_size)
 }
 
 process upload_meta {
@@ -86,10 +89,10 @@ process upload_meta {
     tag { "n=${n}, size=${size}, vt=${virtual_threads}" }
 
     input:
-        each n
-        each size
-        each virtual_threads
-        each trial
+    each n
+    each size
+    each virtual_threads
+    each trial
 
     script:
     """

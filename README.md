@@ -14,3 +14,9 @@ Refer to `main.nf` for the list of available meta-pipeline parameters.
 ```bash
 nextflow run bentsherman/nf-head-job-benchmark [--meta_download] [--meta_upload]
 ```
+
+To run a specific workflow:
+
+```bash
+nextflow run bentsherman/nf-head-job-benchmark -entry upload --upload_count 1000 --upload_size '100MB'
+```
