@@ -64,7 +64,6 @@ process upload_random_file {
     publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
 
     input:
-    val block
     val count
     val size
 
@@ -74,14 +73,13 @@ process upload_random_file {
     script:
     """
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-${size}-${block}-\${index}.data bs=1 count=0 seek=${size}
+        dd if=/dev/random of=upload-${size}-\${index}.data bs=1 count=0 seek=${size}
     done
     """
 }
 
 workflow upload {
-    blocks = Channel.of(1..10)
-    upload_random_file(blocks, params.upload_count.intdiv(10), params.upload_size)
+    upload_random_file(params.upload_count, params.upload_size)
 }
 
 process upload_meta {
