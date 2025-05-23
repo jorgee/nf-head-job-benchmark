@@ -2,7 +2,7 @@
 nextflow.enable.dsl=2
 
 
-params.meta_pipeline = 'bentsherman/nf-head-job-benchmark'
+params.meta_pipeline = 'jorgee/nf-head-job-benchmark'
 params.meta_memory_values = [2.GB, 4.GB, 8.GB, 16.GB]
 params.meta_virtual_threads_values = [false]
 
@@ -22,7 +22,7 @@ params.download_index = "$baseDir/index-small.txt"
 
 params.upload_count = 4
 params.upload_size = '10G'
-params.upload_prefix = 's3://nf-ireland/data'
+params.upload_prefix = 's3://jorgee-eu-west1-test2/data'
 
 
 process download_file {
