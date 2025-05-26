@@ -68,12 +68,13 @@ process upload_random_file {
     val size
 
     output:
-    path '*.data'
+    path 'upload-*'
 
     script:
     """
+    mkdir upload-${size}
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-${size}-\${index}.data bs=1 count=0 seek=${size}
+        dd if=/dev/random of=upload-${size}/\${index}.data bs=1 count=0 seek=${size}
     done
     """
 }
