@@ -14,8 +14,8 @@ params.meta_download_profiles = [
 ]
 
 params.meta_upload = false
-params.meta_upload_counts = [1, 4, 10]
-params.meta_upload_sizes = ['100M', '1G', '10G']
+params.meta_upload_counts = [1]
+params.meta_upload_sizes = ['50G']
 params.meta_upload_trials = 1
 
 params.download_index = "$baseDir/index-small.txt"
