@@ -8,8 +8,6 @@ params.meta_virtual_threads_values = [false]
 
 params.meta_download = false
 params.meta_download_profiles = [
-    'index_small',
-    'index_medium',
     'index_large'
 ]
 
