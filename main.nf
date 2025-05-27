@@ -72,9 +72,8 @@ process upload_random_file {
 
     script:
     """
-    mkdir upload-${size}
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-${size}/\${index}.data bs=1 count=0 seek=${size}
+        dd if=/dev/random of=upload-${size}-\${index}.data bs=1 count=0 seek=${size}
     done
     """
 }
