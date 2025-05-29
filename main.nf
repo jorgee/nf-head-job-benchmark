@@ -165,6 +165,6 @@ workflow {
     if ( params.meta_fs ) {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
-        fs_meta(ch_virtual_threads)
+        fs_meta(ch_virtual_threads, ch_trials)
     }
 }
