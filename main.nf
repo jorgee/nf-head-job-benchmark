@@ -124,21 +124,21 @@ process fs_meta {
     echo 'Remove...'
     time nextflow fs rm ${params.fs_prefix}/*
     echo 'copy file...'
-    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data ${params.fs_prefix}/
+    time nextflow fs cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data ${params.fs_prefix}/
     echo 'copy files...'
-    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G/* ${params.fs_prefix}/
+    time nextflow fs cp ${params.upload_prefix}/test-data-50-1G/upload-1G/* ${params.fs_prefix}/
     echo 'copy dir...'
-    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G ${params.fs_prefix}/
+    time nextflow fs cp ${params.upload_prefix}/test-data-50-1G/upload-1G ${params.fs_prefix}/
     echo 'download file...'
-    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data .
+    time nextflow fs cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data .
     echo 'removing...'
     time rm upload-50G-1.data
     echo 'downloading dir...'
-    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-1G .
+    time nextflow fs cp ${params.upload_prefix}/test-data-1-50G/upload-1G .
     echo 'removing...'
     time rm -rf upload-1G
     echo 'downloading files...'
-    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-1G/* .
+    time nextflow fs cp ${params.upload_prefix}/test-data-1-50G/upload-1G/* .
     """
 }
 
