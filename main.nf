@@ -21,7 +21,7 @@ params.download_index = "$baseDir/index-small.txt"
 params.upload_count = 4
 params.upload_size = '10G'
 params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
-
+params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
 
 process download_file {
     input:
@@ -104,6 +104,45 @@ process upload_meta {
     """
 }
 
+process fs_meta {
+    label 'meta'
+    tag { "vt=${virtual_threads}" }
+
+    input:
+    each n
+    each size
+    each virtual_threads
+    each trial
+
+    script:
+    """
+    # force virtual threads setting to be applied
+    rm -f /.nextflow/launch-classpath
+
+    # run pipeline
+    export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
+    echo \"aws.region='eu-west-1'\" >> nextflow.config
+    echo 'Remove...'
+    time nextflow fs rm ${params.fs_prefix}/transfer/*
+    echo 'copy file...'
+    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data ${params.fs_prefix}/transfer/
+    echo 'copy files...'
+    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G/* ${params.fs_prefix}/transfer/
+    echo 'copy dir...'
+    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G ${params.fs_prefix}/transfer/
+    echo 'download file...'
+    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data .
+    echo 'removing...'
+    time rm upload-50G-1.data
+    echo 'downloading dir...'
+    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-1G .
+    echo 'removing...'
+    time rm -rf upload-1G
+    echo 'downloading files...'
+    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-1G/* .
+    """
+}
+
 
 workflow {
     if ( params.meta_download ) {
@@ -119,5 +158,9 @@ workflow {
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
 
         upload_meta(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+    }
+    if ( params.meta_fs ) {
+        ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
+        fs_meta(ch_virtual_threads)
     }
 }
