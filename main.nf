@@ -21,6 +21,8 @@ params.download_index = "$baseDir/index-small.txt"
 params.upload_count = 4
 params.upload_size = '10G'
 params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
+
+params.meta_fs = false
 params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
 
 process download_file {
