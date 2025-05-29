@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 
 params.meta_pipeline = 'jorgee/nf-head-job-benchmark'
-params.meta_memory_values = [ 8.GB, 16.GB]
+params.meta_memory_values = [ 8.GB ]
 params.meta_virtual_threads_values = [false]
 
 params.meta_download = false
@@ -14,7 +14,7 @@ params.meta_download_profiles = [
 params.meta_upload = false
 params.meta_upload_counts = [50]
 params.meta_upload_sizes = ['1G']
-params.meta_upload_trials = 1
+params.meta_upload_trials = 5
 
 params.download_index = "$baseDir/index-small.txt"
 
@@ -23,6 +23,7 @@ params.upload_size = '10G'
 params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
 
 params.meta_fs = false
+params.meta_fs_trials = 5
 params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
 
 process download_file {
@@ -112,9 +113,12 @@ process fs_meta {
 
     input:
     each virtual_threads
+    each trial
 
     script:
     """
+    # print java memory options
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
     # force virtual threads setting to be applied
     rm -f /.nextflow/launch-classpath
 
@@ -122,13 +126,13 @@ process fs_meta {
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
     echo 'Remove...'
-    time nextflow fs rm ${params.fs_prefix}/*
+    time nextflow fs rm ${params.fs_prefix}/$trial/*
     echo 'copy file...'
-    time nextflow fs cp ${params.upload_prefix}-1-50G/upload-50G-1.data ${params.fs_prefix}/
+    time nextflow fs cp ${params.upload_prefix}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/
     echo 'copy files...'
-    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G/* ${params.fs_prefix}/
+    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G/* ${params.fs_prefix}/$trial/
     echo 'copy dir...'
-    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G ${params.fs_prefix}/
+    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G ${params.fs_prefix}/$trial/
     echo 'download file...'
     time nextflow fs cp ${params.upload_prefix}-1-50G/upload-50G-1.data .
     echo 'removing...'
@@ -160,6 +164,7 @@ workflow {
     }
     if ( params.meta_fs ) {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
+        ch_trials = Channel.of(1 .. params.meta_upload_trials)
         fs_meta(ch_virtual_threads)
     }
 }
