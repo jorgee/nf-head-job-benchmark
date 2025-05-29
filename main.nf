@@ -111,10 +111,7 @@ process fs_meta {
     tag { "vt=${virtual_threads}" }
 
     input:
-    each n
-    each size
     each virtual_threads
-    each trial
 
     script:
     """
