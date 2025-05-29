@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 
 params.meta_pipeline = 'jorgee/nf-head-job-benchmark'
-params.meta_memory_values = [ 7.5GB ]
+params.meta_memory_values = [ '7500MB' ]
 params.meta_virtual_threads_values = [false]
 
 params.meta_download = false
