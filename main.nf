@@ -125,13 +125,13 @@ process fs_meta {
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
     echo 'Remove...'
-    time nextflow fs rm ${params.fs_prefix}/transfer/*
+    time nextflow fs rm ${params.fs_prefix}/*
     echo 'copy file...'
-    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data ${params.fs_prefix}/transfer/
+    time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data ${params.fs_prefix}/
     echo 'copy files...'
-    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G/* ${params.fs_prefix}/transfer/
+    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G/* ${params.fs_prefix}/
     echo 'copy dir...'
-    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G ${params.fs_prefix}/transfer/
+    time nextflow cp ${params.upload_prefix}/test-data-50-1G/upload-1G ${params.fs_prefix}/
     echo 'download file...'
     time nextflow cp ${params.upload_prefix}/test-data-1-50G/upload-50G-1.data .
     echo 'removing...'
