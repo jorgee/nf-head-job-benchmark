@@ -134,11 +134,11 @@ process fs_meta {
     echo 'removing...'
     time rm upload-50G-1.data
     echo 'downloading dir...'
-    time nextflow fs cp ${params.upload_prefix}-1-50G/upload-1G .
+    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G .
     echo 'removing...'
     time rm -rf upload-1G
     echo 'downloading files...'
-    time nextflow fs cp ${params.upload_prefix}-1-50G/upload-1G/* .
+    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G/* .
     """
 }
 
