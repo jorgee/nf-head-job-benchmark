@@ -87,7 +87,7 @@ process upload_random_dir {
     val size
 
     output:
-    path 'upload-dir-${size}'
+    path 'upload-dir-*'
 
     script:
     """
@@ -231,7 +231,7 @@ workflow {
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
 
         upload_meta(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
-        upload_meta_big(Channel.fromList([1]), Channel.fromList(['50GB']), ch_virtual_threads, ch_trials)
+        upload_meta_big(Channel.fromList([1]), Channel.fromList(['50G']), ch_virtual_threads, ch_trials)
         upload_meta_dir(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
     }
     if ( params.meta_fs ) {
