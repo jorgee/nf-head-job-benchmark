@@ -129,6 +129,30 @@ process upload_meta {
     """
 }
 
+process upload_meta_big {
+    label 'meta'
+    tag { "n=${n}, size=${size}, vt=${virtual_threads}" }
+
+    input:
+    each n
+    each size
+    each virtual_threads
+    each trial
+
+    script:
+    """
+    # print java memory options
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
+
+    # force virtual threads setting to be applied
+    rm -f /.nextflow/launch-classpath
+
+    # run pipeline
+    export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
+    """
+}
+
 process upload_meta_dir {
     label 'meta'
     tag { " dir n=${n}, size=${size}, vt=${virtual_threads}" }
@@ -207,7 +231,7 @@ workflow {
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
 
         upload_meta(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
-        upload_meta(Channel.fromList([1]), Channel.fromList(['50GB']), ch_virtual_threads, ch_trials)
+        upload_meta_big(Channel.fromList([1]), Channel.fromList(['50GB']), ch_virtual_threads, ch_trials)
         upload_meta_dir(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
     }
     if ( params.meta_fs ) {
