@@ -14,7 +14,7 @@ params.meta_download_profiles = [
 params.meta_upload = false
 params.meta_upload_counts = [50]
 params.meta_upload_sizes = ['1G']
-params.meta_upload_trials = 5
+params.meta_upload_trials = 1
 
 params.download_index = "$baseDir/index-small.txt"
 
@@ -79,8 +79,30 @@ process upload_random_file {
     """
 }
 
+process upload_random_dir {
+    publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
+
+    input:
+    val count
+    val size
+
+    output:
+    path 'upload-dir-${size}'
+
+    script:
+    """
+    mkdir upload-dir-${size}
+    for index in `seq $count` ; do
+        dd if=/dev/random of=upload-dir-${size}/\${index}.data bs=1 count=0 seek=${size}
+    done
+    """
+}
+
 workflow upload {
     upload_random_file(params.upload_count, params.upload_size)
+}
+workflow upload_dir {
+    upload_random_dir(params.upload_count, params.upload_size)
 }
 
 process upload_meta {
@@ -104,6 +126,30 @@ process upload_meta {
     # run pipeline
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
+    """
+}
+
+process upload_meta_dir {
+    label 'meta'
+    tag { " dir n=${n}, size=${size}, vt=${virtual_threads}" }
+
+    input:
+    each n
+    each size
+    each virtual_threads
+    each trial
+
+    script:
+    """
+    # print java memory options
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
+
+    # force virtual threads setting to be applied
+    rm -f /.nextflow/launch-classpath
+
+    # run pipeline
+    export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
+    nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_count ${n} --upload_size '${size}'
     """
 }
 
@@ -161,6 +207,8 @@ workflow {
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
 
         upload_meta(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+        upload_meta(Channel.fromList([1]), Channel.fromList(['50GB']), ch_virtual_threads, ch_trials)
+        upload_meta_dir(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
     }
     if ( params.meta_fs ) {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
