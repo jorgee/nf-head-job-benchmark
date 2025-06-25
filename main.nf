@@ -165,6 +165,7 @@ process upload_meta_big {
     rm -f /.nextflow/launch-classpath
 
     # run pipeline
+    set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
     RESULT=\$?
@@ -196,6 +197,7 @@ process upload_meta_dir {
     rm -f /.nextflow/launch-classpath
 
     # run pipeline
+    set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_count ${n} --upload_size '${size}'
     RESULT=\$?
