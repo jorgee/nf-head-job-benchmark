@@ -57,6 +57,7 @@ process download_meta {
     java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
 
     # run pipeline
+    set +e
     nextflow run ${params.meta_pipeline} -latest -entry download -profile ${profile}
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
@@ -132,6 +133,7 @@ process upload_meta {
     rm -f /.nextflow/launch-classpath
 
     # run pipeline
+    set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
     RESULT=\$?
@@ -165,6 +167,13 @@ process upload_meta_big {
     # run pipeline
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+    fi
+    exit \$RESULT
     """
 }
 
