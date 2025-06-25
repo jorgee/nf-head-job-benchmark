@@ -58,6 +58,13 @@ process download_meta {
 
     # run pipeline
     nextflow run ${params.meta_pipeline} -latest -entry download -profile ${profile}
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+    fi
+    exit \$RESULT
     """
 }
 
@@ -127,6 +134,13 @@ process upload_meta {
     # run pipeline
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+    fi
+    exit \$RESULT
     """
 }
 
@@ -175,6 +189,13 @@ process upload_meta_dir {
     # run pipeline
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_count ${n} --upload_size '${size}'
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+    fi
+    exit \$RESULT
     """
 }
 
