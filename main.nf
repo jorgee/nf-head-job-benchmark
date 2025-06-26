@@ -226,26 +226,76 @@ process fs_meta {
     rm -f /.nextflow/launch-classpath
 
     # run pipeline
+    set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
     echo 'Remove...'
     time nextflow fs rm ${params.fs_prefix}/$trial/*
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
     echo 'copy file...'
     time nextflow fs cp ${params.upload_prefix}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
     echo 'copy files...'
     time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G/* ${params.fs_prefix}/$trial/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
     echo 'copy dir...'
     time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G ${params.fs_prefix}/$trial/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
     echo 'download file...'
     time nextflow fs cp ${params.upload_prefix}-1-50G/upload-50G-1.data .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
     echo 'removing...'
     time rm upload-50G-1.data
     echo 'downloading dir...'
     time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
     echo 'removing...'
     time rm -rf upload-1G
     echo 'downloading files...'
     time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G/* .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
     """
 }
 
