@@ -230,7 +230,7 @@ process fs_meta {
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
     echo 'Remove...'
-    time nextflow fs rm ${params.fs_prefix}/$trial/*
+    time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/*
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
