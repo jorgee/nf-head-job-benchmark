@@ -3,6 +3,7 @@ nextflow.enable.dsl=2
 
 
 params.meta_pipeline = 'jorgee/nf-head-job-benchmark'
+params.meta_upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
 params.meta_memory_values = [ '7800MB' ]
 params.meta_cpus = 4
 params.meta_virtual_threads_values = [false]
@@ -143,7 +144,7 @@ process upload_meta {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix '${params.upload_prefix}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix ${params.meta_upload_prefix}
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
