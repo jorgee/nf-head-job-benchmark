@@ -143,7 +143,7 @@ process upload_meta {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix '${params.upload_prefix}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -176,7 +176,7 @@ process upload_meta_big {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix '${params.upload_prefix}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -209,7 +209,7 @@ process upload_meta_dir {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix '${params.upload_prefix}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
