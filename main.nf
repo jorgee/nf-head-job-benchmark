@@ -13,12 +13,15 @@ params.meta_download_profiles = [
 ]
 
 params.meta_upload = false
+params.meta_upload_extended = false
+params.meta_upload_tasks = [1]
 params.meta_upload_counts = [50]
 params.meta_upload_sizes = ['1G']
 params.meta_upload_trials = 1
 
 params.download_index = "$baseDir/index-small.txt"
 
+params.upload_task = 1
 params.upload_count = 4
 params.upload_size = '10G'
 params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
@@ -74,6 +77,7 @@ process upload_random_file {
     publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
 
     input:
+    val task
     val count
     val size
 
@@ -83,7 +87,7 @@ process upload_random_file {
     script:
     """
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-${size}-\${index}.data bs=1 count=0 seek=${size}
+        dd if=/dev/random of=upload-${size}\${index}-${task}.data bs=1 count=0 seek=${size}
     done
     """
 }
@@ -92,6 +96,7 @@ process upload_random_dir {
     publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
 
     input:
+    val task
     val count
     val size
 
@@ -100,25 +105,28 @@ process upload_random_dir {
 
     script:
     """
-    mkdir upload-dir-${size}
+    mkdir upload-dir-${task}-${size}
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-dir-${size}/\${index}.data bs=1 count=0 seek=${size}
+        dd if=/dev/random of=upload-dir-${task}-${size}/\${index}.data bs=1 count=0 seek=${size}
     done
     """
 }
 
 workflow upload {
-    upload_random_file(params.upload_count, params.upload_size)
+    ch_tasks = Channel.of(1 .. params.upload_tasks)
+    upload_random_file(ch_tasks, params.upload_count, params.upload_size)
 }
 workflow upload_dir {
-    upload_random_dir(params.upload_count, params.upload_size)
+    ch_tasks = Channel.of(1 .. params.upload_tasks)
+    upload_random_dir(ch_tasks, params.upload_count, params.upload_size)
 }
 
 process upload_meta {
     label 'meta'
-    tag { "n=${n}, size=${size}, vt=${virtual_threads}" }
+    tag { "tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads}" }
 
     input:
+    each tasks
     each n
     each size
     each virtual_threads
@@ -135,7 +143,7 @@ process upload_meta {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -148,9 +156,10 @@ process upload_meta {
 
 process upload_meta_big {
     label 'meta'
-    tag { "n=${n}, size=${size}, vt=${virtual_threads}" }
+    tag { "tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads}" }
 
     input:
+    each tasks
     each n
     each size
     each virtual_threads
@@ -167,7 +176,7 @@ process upload_meta_big {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_count ${n} --upload_size '${size}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -180,9 +189,10 @@ process upload_meta_big {
 
 process upload_meta_dir {
     label 'meta'
-    tag { " dir n=${n}, size=${size}, vt=${virtual_threads}" }
+    tag { " dir tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads}" }
 
     input:
+    each tasks
     each n
     each size
     each virtual_threads
@@ -199,7 +209,7 @@ process upload_meta_dir {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_count ${n} --upload_size '${size}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -308,14 +318,17 @@ workflow {
     }
 
     if ( params.meta_upload ) {
+        ch_tasks = Channel.fromList(params.meta_upload_tasks)
         ch_counts = Channel.fromList(params.meta_upload_counts)
         ch_sizes = Channel.fromList(params.meta_upload_sizes)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
 
-        upload_meta(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
-        upload_meta_big(Channel.fromList([1]), Channel.fromList(['50G']), ch_virtual_threads, ch_trials)
-        upload_meta_dir(ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+        upload_meta(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+        if ( params.meta_upload_extended ) {
+            upload_meta_big(Channel.fromList([1]), Channel.fromList([1]), Channel.fromList(['50G']), ch_virtual_threads, ch_trials)
+            upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+        }
     }
     if ( params.meta_fs ) {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
