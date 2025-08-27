@@ -78,7 +78,7 @@ process upload_random_file {
     publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
 
     input:
-    val task
+    val num_task
     val count
     val size
 
@@ -88,7 +88,7 @@ process upload_random_file {
     script:
     """
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-${size}\${index}-${task}.data bs=1 count=0 seek=${size}
+        dd if=/dev/random of=upload-${size}\${index}-${num_task}.data bs=1 count=0 seek=${size}
     done
     """
 }
@@ -97,7 +97,7 @@ process upload_random_dir {
     publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
 
     input:
-    val task
+    val num_task
     val count
     val size
 
@@ -106,9 +106,9 @@ process upload_random_dir {
 
     script:
     """
-    mkdir upload-dir-${task}-${size}
+    mkdir upload-dir-${num_task}-${size}
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-dir-${task}-${size}/\${index}.data bs=1 count=0 seek=${size}
+        dd if=/dev/random of=upload-dir-${num_task}-${size}/\${index}.data bs=1 count=0 seek=${size}
     done
     """
 }
