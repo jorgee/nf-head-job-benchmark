@@ -148,13 +148,6 @@ process upload_meta {
     tail -f .nextflow.log &
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     nextflow run ${params.meta_pipeline} -latest -profile ${params.meta_profile} -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix ${params.meta_upload_prefix}
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      cat .nextflow.log
-    fi
-    exit \$RESULT
     """
 }
 
