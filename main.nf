@@ -146,8 +146,10 @@ process upload_meta {
     set +e
     touch .nextflow.log
     tail -f .nextflow.log &
+    pid=$!
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -trace nextflow -latest -profile ${params.meta_profile} -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix ${params.meta_upload_prefix}
+    nextflow -trace nextflow run ${params.meta_pipeline}  -latest -profile ${params.meta_profile} -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix ${params.meta_upload_prefix}
+    kill $pid
     """
 }
 
