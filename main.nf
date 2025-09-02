@@ -140,7 +140,7 @@ process upload_meta {
     java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
 
     # force virtual threads setting to be applied
-    rm -f /.nextflow/launch-classpath
+    # rm -f /.nextflow/launch-classpath
 
     # run pipeline
     set +e
