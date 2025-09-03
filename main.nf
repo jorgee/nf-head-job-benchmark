@@ -30,7 +30,7 @@ params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
 
 params.meta_fs = false
 params.meta_fs_trials = 5
-params.fs_origin = 's3://jorgee-eu-west1-test2/fs-origin-data/test-data'
+params.fs_origin = 's3://jorgee-eu-west1-test1/fs-origin-data/test-data'
 params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
 
 process download_file {
@@ -250,7 +250,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'copy file...'
-    time nextflow -trace nextflow,software fs cp ${params.fs_origin}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/cp/
+    time nextflow fs cp ${params.fs_origin}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
