@@ -30,6 +30,7 @@ params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
 
 params.meta_fs = false
 params.meta_fs_trials = 5
+params.fs_origin = 's3://jorgee-eu-west1-test2/fs-origin-data/test-data'
 params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
 
 process download_file {
@@ -248,7 +249,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'copy file...'
-    time nextflow fs cp ${params.upload_prefix}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/
+    time nextflow fs cp ${params.fs_origin}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -257,7 +258,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'copy files...'
-    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G/* ${params.fs_prefix}/$trial/
+    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G/* ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -266,7 +267,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'copy dir...'
-    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G ${params.fs_prefix}/$trial/
+    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -275,7 +276,16 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'download file...'
-    time nextflow fs cp ${params.upload_prefix}-1-50G/upload-50G-1.data .
+    time nextflow fs cp ${params.fs_origin}-1-50G/upload-50G-1.data .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+    echo 'upload file...'
+    time nextflow fs cp upload-50G-1.data ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -286,7 +296,16 @@ process fs_meta {
     echo 'removing...'
     time rm upload-50G-1.data
     echo 'downloading dir...'
-    time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G .
+    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+    echo 'uploading dir...'
+    time nextflow fs cp upload-1G ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -298,6 +317,15 @@ process fs_meta {
     time rm -rf upload-1G
     echo 'downloading files...'
     time nextflow fs cp ${params.upload_prefix}-50-1G/upload-1G/* .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+    echo 'uploading files...'
+    time nextflow fs cp upload-1G/* ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
