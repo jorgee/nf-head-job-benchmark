@@ -323,7 +323,6 @@ process fs_meta {
       cat .nextflow.log
       exit \$RESULT
     fi
-    """
     echo 'removing...'
     time rm -rf upload-1G
     echo 'downloading files...'
