@@ -250,7 +250,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'copy file...'
-    time nextflow -trace fs cp ${params.fs_origin}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/cp/
+    time nextflow fs cp ${params.fs_origin}-1-50G/upload-50G-1.data ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
