@@ -298,7 +298,7 @@ process fs_meta {
     time rm upload-50G-1.data
     mkdir up-1G-files
     echo 'downloading files...'
-    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G/* up-1G-files/
+    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G/* \$PWD/up-1G-files/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -308,7 +308,7 @@ process fs_meta {
     fi
     echo 'uploading files...'
     ls -l up-1G-files/*
-    time nextflow fs cp up-1G-files/* ${params.fs_prefix}/$trial/up/
+    time nextflow fs cp \$PWD/up-1G-files/* ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -339,6 +339,70 @@ process fs_meta {
     """
 }
 
+process fs_meta_dir {
+    label 'meta'
+    tag { "vt=${virtual_threads}" }
+
+    input:
+    each virtual_threads
+    each trial
+    output:
+    file('.nextflow.log*')
+    file('*.hprof')
+
+    script:
+    """
+    export JVM_ARGS='-XX:+HeapDumpOnOutOfMemoryError'
+    # print java memory options
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
+    # force virtual threads setting to be applied
+    rm -f /.nextflow/launch-classpath
+
+    # run pipeline
+    set +e
+    export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
+    echo \"aws.region='eu-west-1'\" >> nextflow.config
+    echo 'Remove...'
+    time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/cp/*
+    time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
+    
+    echo 'uploading files...'
+    ls -l up-1G-files/*
+    time nextflow fs cp \$PWD/up-1G-files/* ${params.fs_prefix}/$trial/up/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      echo failed
+    fi
+    echo 'removing...'
+    time rm -rf up-1G-files
+    echo 'downloading dir...'
+    time nextflow -trace nextflow fs cp ${params.fs_origin}-50-1G/upload-1G . 
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      echo failed
+    fi
+    echo 'uploading dir...'
+    time nextflow fs cp upload-1G ${params.fs_prefix}/$trial/up/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      echo failed
+    fi
+    time nextflow fs cp \$PWD/upload-1G/* ${params.fs_prefix}/$trial/up/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      echo failed
+    fi
+    """
+}
+
 
 workflow {
     if ( params.meta_download ) {
@@ -361,6 +425,11 @@ workflow {
         }
     }
     if ( params.meta_fs ) {
+        ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
+        ch_trials = Channel.of(1 .. params.meta_fs_trials)
+        fs_meta(ch_virtual_threads, ch_trials)
+    }
+    if ( params.meta_fs_dir ) {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
         fs_meta(ch_virtual_threads, ch_trials)
