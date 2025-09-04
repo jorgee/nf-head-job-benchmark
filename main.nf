@@ -347,8 +347,8 @@ process fs_meta_dir {
     each virtual_threads
     each trial
     output:
-    file('.nextflow.log*')
-    file('*.hprof'), optional: true
+    path('.nextflow.log*')
+    path('*.hprof'), optional: true
 
     script:
     """
