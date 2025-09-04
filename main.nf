@@ -307,6 +307,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'uploading files...'
+    ls -l up-1G-files/*
     time nextflow fs cp up-1G-files/* ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
