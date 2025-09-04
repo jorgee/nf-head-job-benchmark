@@ -296,26 +296,6 @@ process fs_meta {
     fi
     echo 'removing...'
     time rm upload-50G-1.data
-    echo 'downloading dir...'
-    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G .
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      cat .nextflow.log
-      exit \$RESULT
-    fi
-    echo 'uploading dir...'
-    time nextflow fs cp upload-1G ${params.fs_prefix}/$trial/up/
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      cat .nextflow.log
-      exit \$RESULT
-    fi
-    echo 'removing...'
-    time rm -rf upload-1G
     mkdir up-1G-files
     echo 'downloading files...'
     time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G/* up-1G-files/
@@ -328,6 +308,26 @@ process fs_meta {
     fi
     echo 'uploading files...'
     time nextflow fs cp up-1G-files/* ${params.fs_prefix}/$trial/up/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+    echo 'removing...'
+    time rm -rf up-1G-files
+    echo 'downloading dir...'
+    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+    echo 'uploading dir...'
+    time nextflow fs cp upload-1G ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
