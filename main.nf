@@ -348,7 +348,7 @@ process fs_meta_dir {
     each trial
     output:
     file('.nextflow.log*')
-    file('*.hprof')
+    file('*.hprof'), optional: true
 
     script:
     """
