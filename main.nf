@@ -432,6 +432,6 @@ workflow {
     if ( params.meta_fs_dir ) {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
-        fs_meta(ch_virtual_threads, ch_trials)
+        fs_meta_dir(ch_virtual_threads, ch_trials)
     }
 }
