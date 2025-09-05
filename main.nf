@@ -78,7 +78,7 @@ process download_meta {
 
 
 process upload_random_file {
-    publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
+    publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}-${params.upload_trial}/"
 
     input:
     val num_task
@@ -97,7 +97,7 @@ process upload_random_file {
 }
 
 process upload_random_dir {
-    publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}/"
+    publishDir "${params.upload_prefix}-${params.upload_count}-${params.upload_size}-${params.upload_trial}/"
 
     input:
     val num_task
