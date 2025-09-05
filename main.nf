@@ -366,17 +366,6 @@ process fs_meta_dir {
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/cp/*
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
     
-    echo 'uploading files...'
-    ls -l up-1G-files/*
-    time nextflow fs cp \$PWD/up-1G-files/* ${params.fs_prefix}/$trial/up/
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      echo failed
-    fi
-    echo 'removing...'
-    time rm -rf up-1G-files
     echo 'downloading dir...'
     time nextflow -trace nextflow fs cp ${params.fs_origin}-50-1G/upload-1G . 
     RESULT=\$?
@@ -386,14 +375,15 @@ process fs_meta_dir {
       echo failed
     fi
     echo 'uploading dir...'
-    time nextflow fs cp upload-1G ${params.fs_prefix}/$trial/up/
+    time nextflow -trace nextflow fs cp upload-1G ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
     else
       echo failed
     fi
-    time nextflow fs cp \$PWD/upload-1G/* ${params.fs_prefix}/$trial/up/
+    echo 'uploading files ...'
+    time nextflow -trace nextflow fs cp \$PWD/upload-1G/* ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
