@@ -13,6 +13,7 @@ params.meta_download = false
 params.meta_download_profiles = [
     'index_large'
 ]
+params.meta_download_trials = 1
 
 params.meta_upload = false
 params.meta_upload_extended = false
@@ -57,7 +58,8 @@ process download_meta {
     tag { profile }
 
     input:
-    val profile
+    each profile
+    each trial
 
     script:
     """
@@ -399,8 +401,8 @@ process fs_meta_dir {
 workflow {
     if ( params.meta_download ) {
         ch_profiles = Channel.fromList(params.meta_download_profiles)
-        
-        download_meta(ch_profiles)
+        ch_trials = Channel.of(1 .. params.meta_download_trials)
+        download_meta(ch_profiles, ch_trials)
     }
 
     if ( params.meta_upload ) {
