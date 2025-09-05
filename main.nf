@@ -30,6 +30,7 @@ params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
 params.upload_trial = 1
 
 params.meta_fs = false
+params.meta_fs_dir = false
 params.meta_fs_trials = 5
 params.fs_origin = 's3://jorgee-eu-west1-test1/fs-origin-data/test-data'
 params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
