@@ -27,6 +27,7 @@ params.upload_task = 1
 params.upload_count = 4
 params.upload_size = '10G'
 params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
+params.upload_trial = 1
 
 params.meta_fs = false
 params.meta_fs_trials = 5
@@ -149,7 +150,7 @@ process upload_meta {
     tail -f .nextflow.log &
     pid=\$!
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline}  -latest -profile ${params.meta_profile} -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix ${params.meta_upload_prefix}
+    nextflow run ${params.meta_pipeline}  -latest -profile ${params.meta_profile} -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_trial ${trial} --upload_prefix ${params.meta_upload_prefix}
     kill \$pid
     """
 }
@@ -176,7 +177,7 @@ process upload_meta_big {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix '${params.upload_prefix}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_trial ${trial} --upload_prefix '${params.upload_prefix}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -209,7 +210,7 @@ process upload_meta_dir {
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
-    nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_prefix '${params.upload_prefix}'
+    nextflow run ${params.meta_pipeline} -latest -entry upload_dir --upload_tasks ${tasks} --upload_count ${n} --upload_size '${size}' --upload_trial ${trial} --upload_prefix '${params.upload_prefix}'
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
