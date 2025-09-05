@@ -259,7 +259,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'copy files...'
-    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G/* ${params.fs_prefix}/$trial/cp/
+    time nextflow fs cp '${params.fs_origin}-50-1G/upload-1G/*' ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -308,7 +308,7 @@ process fs_meta {
     fi
     echo 'uploading files...'
     ls -l up-1G-files/*
-    time nextflow fs cp \$PWD/up-1G-files/* ${params.fs_prefix}/$trial/up/
+    time nextflow fs cp 'up-1G-files/*' ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -383,7 +383,7 @@ process fs_meta_dir {
       echo failed
     fi
     echo 'uploading files ...'
-    time nextflow -trace nextflow fs cp \$PWD/upload-1G/* ${params.fs_prefix}/$trial/up/
+    time nextflow -trace nextflow fs cp 'upload-1G/*' ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
