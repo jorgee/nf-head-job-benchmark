@@ -64,7 +64,6 @@ process download_meta {
     tag { profile }
 
     input:
-    each throughput
     each profile
     each trial
 
@@ -359,7 +358,7 @@ process fs_meta {
 
 process fs_meta_dir {
     label 'meta'
-    tag { @vt=${virtual_threads} dir_concurrency=${dir_concurrency} thp=${throughput} max_concurrency=${max_concurrency} max_native_mem=$max_native_mem" }
+    tag { "vt=${virtual_threads} dir_concurrency=${dir_concurrency} thp=${throughput} max_concurrency=${max_concurrency} max_native_mem=$max_native_mem" }
 
     input:
     each count
