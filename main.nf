@@ -382,7 +382,7 @@ process fs_meta_dir {
     echo 'creating dir $count $size ...'
     mkdir upload-dir-${concurrency}-$count-$size
     for index in `seq $count` ; do
-        dd if=/dev/random of=upload-dir-${concurrency}-$count-$size/\${index}.data bs=1 count=0 seek=1G
+        dd if=/dev/random of=upload-dir-${concurrency}-$count-$size/\${index}.data bs=1 count=0 seek=$size
     done
     echo 'uploading dir $count $size...'
     time nextflow fs cp upload-dir-${concurrency}-$count-$size ${params.fs_prefix}/$trial/up/
