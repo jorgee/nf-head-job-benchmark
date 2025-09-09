@@ -36,6 +36,8 @@ params.meta_fs_dir = false
 params.meta_fs_trials = 5
 params.fs_origin = 's3://jorgee-eu-west1-test1/fs-origin-data/test-data'
 params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
+params.meta_fs_dir_counts = [50]
+params.meta_fs_dir_sizes = ['1G']
 
 process download_file {
     input:
@@ -353,6 +355,9 @@ process fs_meta_dir {
     each concurrency
     each virtual_threads
     each trial
+    each count
+    each size
+
     output:
     path('.nextflow.log*')
     path('*.hprof'), optional: true
@@ -372,27 +377,24 @@ process fs_meta_dir {
     echo \"aws.client.transferDirectoryMaxConcurrency=${concurrency}\" >> nextflow.config
     echo
     echo 'Remove...'
-    time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/cp/*
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
     
-    echo 'downloading dir...'
-    time nextflow fs cp ${params.fs_origin}-50-1G/upload-1G . 
+    echo 'creating dir $count $size ...'
+    mkdir upload-dir-${concurrency}-$count-$size
+    for index in `seq $count` ; do
+        dd if=/dev/random of=upload-dir-${concurrency}-$count-$size/\${index}.data bs=1 count=0 seek=1G
+    done
+    echo 'uploading dir $count $size...'
+    time nextflow fs cp upload-dir-${concurrency}-$count-$size ${params.fs_prefix}/$trial/up/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
     else
       echo failed
     fi
-    echo 'uploading dir...'
-    time nextflow fs cp upload-1G ${params.fs_prefix}/$trial/up/
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      echo failed
-    fi
-    echo 'uploading files ...'
-    time nextflow fs cp 'upload-1G/*' ${params.fs_prefix}/$trial/up/
+    rm -rf upload-dir-${concurrency}-$count-$size
+    echo 'downloading dir $count $size...'
+    time nextflow -trace nextflow fs cp ${params.fs_prefix}/$trial/up/upload-dir-${concurrency}-$count-$size . 
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -443,6 +445,8 @@ workflow {
         ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
+        ch_counts = Channel.fromList(params.meta_fs_dir_counts)
+        ch_sizes = Channel.fromList(params.meta_fs_dir_sizes)
         fs_meta_dir(ch_concurrency, ch_virtual_threads, ch_trials)
     }
 }
