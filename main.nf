@@ -1,7 +1,10 @@
 
 nextflow.enable.dsl=2
 
-params.meta_directory_max_concurrency = [50]
+params.meta_throughput = [ 10 ]
+params.meta_directory_max_concurrency = [100]
+params.meta_max_native_mem = [ '1GB' ]
+params.meta_max_concurrency = [100]
 params.meta_pipeline = 'jorgee/nf-head-job-benchmark'
 params.meta_profile = 'local'
 params.meta_upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
@@ -61,6 +64,7 @@ process download_meta {
     tag { profile }
 
     input:
+    each throughput
     each profile
     each trial
 
@@ -196,21 +200,29 @@ process upload_meta_big {
 
 process upload_meta_dir {
     label 'meta'
-    tag { " dir conc=${concurrency} tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads}" }
+    tag { " dir tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads} dir_concurrency=${dir_concurrency} thp=${throughput} max_concurrency=${max_concurrency} max_native_mem=${max_native_mem}" }
 
     input:
-    each concurrency
+    each throughput
+    
     each tasks
     each n
     each size
     each virtual_threads
+    each dir_concurrency
+    each throughput
+    each max_concurrency
+    each max_native_mem
     each trial
 
     script:
     """
     # print java memory options
     java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
-    echo \"aws.client.transferDirectoryMaxConcurrency=${concurrency}\" >> nextflow.config
+    echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
+    echo \"aws.client.targetThroughputInGbps=${throughput}\" >> nextflow.config
+    echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
+    echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
     # force virtual threads setting to be applied
     rm -f /.nextflow/launch-classpath
     
@@ -349,14 +361,17 @@ process fs_meta {
 
 process fs_meta_dir {
     label 'meta'
-    tag { "concurrency=$concurrency vt=${virtual_threads}" }
+    tag { @vt=${virtual_threads} dir_concurrency=${dir_concurrency} thp=${throughput} max_concurrency=${max_concurrency} max_native_mem=$max_native_mem" }
 
     input:
-    each concurrency
-    each virtual_threads
-    each trial
     each count
     each size
+    each virtual_threads
+    each dir_concurrency
+    each throughput
+    each max_concurrency
+    each max_native_mem
+    each trial
 
     output:
     path('.nextflow.log*')
@@ -374,7 +389,10 @@ process fs_meta_dir {
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
-    echo \"aws.client.transferDirectoryMaxConcurrency=${concurrency}\" >> nextflow.config
+    echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
+    echo \"aws.client.targetThroughputInGbps=${throughput}\" >> nextflow.config
+    echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
+    echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
     echo
     echo 'Remove...'
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
@@ -422,8 +440,11 @@ workflow {
         upload_meta(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
         if ( params.meta_upload_extended ) {
             upload_meta_big(Channel.fromList([1]), Channel.fromList([1]), Channel.fromList(['50G']), ch_virtual_threads, ch_trials)
-            ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
-            upload_meta_dir(ch_concurrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+            ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
+            ch_throughput = Channel.fromList(params.meta_throughput)
+            ch_concurrency = Channel.fromList(params.meta_max_concurrency)
+            ch_max_native_mem = Channel.fromList(params.meta_max_native_mem)
+            upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem ch_trials)
         }
     }
     if ( params.meta_upload_dir ) {
@@ -432,8 +453,11 @@ workflow {
         ch_sizes = Channel.fromList(params.meta_upload_sizes)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
-        ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
-        upload_meta_dir(ch_concurrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+        ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
+        ch_throughput = Channel.fromList(params.meta_throughput)
+        ch_concurrency = Channel.fromList(params.meta_max_concurrency)
+        ch_max_native_mem = Channel.fromList(params.meta_max_native_mem)
+        upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem ch_trials)
     }
 
     if ( params.meta_fs ) {
@@ -442,11 +466,14 @@ workflow {
         fs_meta(ch_virtual_threads, ch_trials)
     }
     if ( params.meta_fs_dir ) {
-        ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
+        ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
+        ch_throughput = Channel.fromList(params.meta_throughput)
+        ch_concurrency = Channel.fromList(params.meta_max_concurrency)
+        ch_max_native_mem = Channel.fromList(params.meta_max_native_mem)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
         ch_counts = Channel.fromList(params.meta_fs_dir_counts)
         ch_sizes = Channel.fromList(params.meta_fs_dir_sizes)
-        fs_meta_dir(ch_concurrency, ch_virtual_threads, ch_trials, ch_counts, ch_sizes)
+        fs_meta_dir(ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem, ch_trials )
     }
 }
