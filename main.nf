@@ -441,7 +441,7 @@ workflow {
             ch_throughput = Channel.fromList(params.meta_throughput)
             ch_concurrency = Channel.fromList(params.meta_max_concurrency)
             ch_max_native_mem = Channel.fromList(params.meta_max_native_mem)
-            upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem ch_trials)
+            upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem, ch_trials)
         }
     }
     if ( params.meta_upload_dir ) {
@@ -454,7 +454,7 @@ workflow {
         ch_throughput = Channel.fromList(params.meta_throughput)
         ch_concurrency = Channel.fromList(params.meta_max_concurrency)
         ch_max_native_mem = Channel.fromList(params.meta_max_native_mem)
-        upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem ch_trials)
+        upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem, ch_trials)
     }
 
     if ( params.meta_fs ) {
