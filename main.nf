@@ -17,6 +17,7 @@ params.meta_download_trials = 1
 
 params.meta_upload = false
 params.meta_upload_extended = false
+params.meta_upload_dir = false
 params.meta_upload_tasks = [1]
 params.meta_upload_counts = [50]
 params.meta_upload_sizes = ['1G']
@@ -420,7 +421,7 @@ workflow {
         if ( params.meta_upload_extended ) {
             upload_meta_big(Channel.fromList([1]), Channel.fromList([1]), Channel.fromList(['50G']), ch_virtual_threads, ch_trials)
             ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
-            upload_meta_dir(ch_concurrrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+            upload_meta_dir(ch_concurrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
         }
     }
     if ( params.meta_upload_dir ) {
@@ -430,7 +431,7 @@ workflow {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_upload_trials)
         ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
-        upload_meta_dir(ch_concurrrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+        upload_meta_dir(ch_concurrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
     }
 
     if ( params.meta_fs ) {
@@ -442,6 +443,6 @@ workflow {
         ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
-        fs_meta_dir(ch_concurrrency, ch_virtual_threads, ch_trials)
+        fs_meta_dir(ch_concurrency, ch_virtual_threads, ch_trials)
     }
 }
