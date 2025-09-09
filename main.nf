@@ -203,8 +203,6 @@ process upload_meta_dir {
     tag { " dir tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads} dir_concurrency=${dir_concurrency} thp=${throughput} max_concurrency=${max_concurrency} max_native_mem=${max_native_mem}" }
 
     input:
-    each throughput
-    
     each tasks
     each n
     each size
