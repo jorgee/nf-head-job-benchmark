@@ -447,6 +447,6 @@ workflow {
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
         ch_counts = Channel.fromList(params.meta_fs_dir_counts)
         ch_sizes = Channel.fromList(params.meta_fs_dir_sizes)
-        fs_meta_dir(ch_concurrency, ch_virtual_threads, ch_trials)
+        fs_meta_dir(ch_concurrency, ch_virtual_threads, ch_trials, ch_counts, ch_sizes)
     }
 }
