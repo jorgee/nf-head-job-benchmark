@@ -1,7 +1,7 @@
 
 nextflow.enable.dsl=2
 
-
+params.meta_directory_max_concurrency = [50]
 params.meta_pipeline = 'jorgee/nf-head-job-benchmark'
 params.meta_profile = 'local'
 params.meta_upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
@@ -193,9 +193,10 @@ process upload_meta_big {
 
 process upload_meta_dir {
     label 'meta'
-    tag { " dir tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads}" }
+    tag { " dir conc=${concurrency} tasks=${tasks} n=${n}, size=${size}, vt=${virtual_threads}" }
 
     input:
+    each concurrency
     each tasks
     each n
     each size
@@ -206,10 +207,10 @@ process upload_meta_dir {
     """
     # print java memory options
     java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
-
+    echo \"aws.client.transferDirectoryMaxConcurrency=${concurrency}\" >> nextflow.config
     # force virtual threads setting to be applied
     rm -f /.nextflow/launch-classpath
-
+    
     # run pipeline
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
@@ -345,9 +346,10 @@ process fs_meta {
 
 process fs_meta_dir {
     label 'meta'
-    tag { "vt=${virtual_threads}" }
+    tag { "concurrency=$concurrency vt=${virtual_threads}" }
 
     input:
+    each concurrency
     each virtual_threads
     each trial
     output:
@@ -366,6 +368,8 @@ process fs_meta_dir {
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
+    echo \"aws.client.transferDirectoryMaxConcurrency=${concurrency}\" >> nextflow.config
+    echo
     echo 'Remove...'
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/cp/*
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
@@ -415,17 +419,29 @@ workflow {
         upload_meta(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
         if ( params.meta_upload_extended ) {
             upload_meta_big(Channel.fromList([1]), Channel.fromList([1]), Channel.fromList(['50G']), ch_virtual_threads, ch_trials)
-            upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+            ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
+            upload_meta_dir(ch_concurrrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
         }
     }
+    if ( params.meta_upload_dir ) {
+        ch_tasks = Channel.fromList(params.meta_upload_tasks)
+        ch_counts = Channel.fromList(params.meta_upload_counts)
+        ch_sizes = Channel.fromList(params.meta_upload_sizes)
+        ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
+        ch_trials = Channel.of(1 .. params.meta_upload_trials)
+        ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
+        upload_meta_dir(ch_concurrrency, ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_trials)
+    }
+
     if ( params.meta_fs ) {
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
         fs_meta(ch_virtual_threads, ch_trials)
     }
     if ( params.meta_fs_dir ) {
+        ch_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
-        fs_meta_dir(ch_virtual_threads, ch_trials)
+        fs_meta_dir(ch_concurrrency, ch_virtual_threads, ch_trials)
     }
 }
