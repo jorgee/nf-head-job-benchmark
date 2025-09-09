@@ -1,10 +1,10 @@
 
 nextflow.enable.dsl=2
 
-params.meta_throughput = [ 10 ]
-params.meta_directory_max_concurrency = [100]
-params.meta_max_native_mem = [ '1GB' ]
-params.meta_max_concurrency = [100]
+params.meta_throughput = [ 'none' ]
+params.meta_directory_max_concurrency = [ 'none' ]
+params.meta_max_native_mem = [ 'none' ]
+params.meta_max_concurrency = [ 'none' ]
 params.meta_pipeline = 'jorgee/nf-head-job-benchmark'
 params.meta_profile = 'local'
 params.meta_upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
@@ -216,10 +216,18 @@ process upload_meta_dir {
     """
     # print java memory options
     java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
-    echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
-    echo \"aws.client.targetThroughputInGbps=${throughput}\" >> nextflow.config
-    echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
-    echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
+    if [ '${dir_concurrency}' != 'none' ]; then
+        echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
+    fi
+    if [ '${throughput}' != 'none' ]; then
+        echo \"aws.client.targetThroughputInGbps=${throughput}\" >> nextflow.config
+    fi
+    if [ '${max_concurrency}' != 'none' ]; then
+        echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
+    fi
+    if [ '${max_native_mem}' != 'none' ]; then
+        echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
+    fi
     # force virtual threads setting to be applied
     rm -f /.nextflow/launch-classpath
     
@@ -386,11 +394,19 @@ process fs_meta_dir {
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
-    echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
-    echo \"aws.client.targetThroughputInGbps=${throughput}\" >> nextflow.config
-    echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
-    echo \"aws.client.maxNativeMemory='${max_native_mem}'\" >> nextflow.config
-    echo
+    if [ '${dir_concurrency}' != 'none' ]; then
+        echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
+    fi
+    if [ '${throughput}' != 'none' ]; then
+        echo \"aws.client.targetThroughputInGbps=${throughput}\" >> nextflow.config
+    fi
+    if [ '${max_concurrency}' != 'none' ]; then
+        echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
+    fi
+    if [ '${max_native_mem}' != 'none' ]; then
+        echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
+    fi
+    
     cat nextflow.config
     echo 'Remove...'
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
