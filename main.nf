@@ -389,8 +389,9 @@ process fs_meta_dir {
     echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
     echo \"aws.client.targetThroughputInGbps=${throughput}\" >> nextflow.config
     echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
-    echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
+    echo \"aws.client.maxNativeMemory='${max_native_mem}'\" >> nextflow.config
     echo
+    cat nextflow.config
     echo 'Remove...'
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
     
