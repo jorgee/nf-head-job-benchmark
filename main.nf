@@ -395,7 +395,7 @@ process fs_meta_dir {
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
     
     echo 'creating dir $count $size ...'
-    dirname=upload-dir-${dir-concurrency}-${throughput}-${max_concurrency}-${max_native_mem}-$count-$size
+    dirname=upload-dir-${dir_concurrency}-${throughput}-${max_concurrency}-${max_native_mem}-$count-$size
     mkdir \$dirname
     for index in `seq $count` ; do
         dd if=/dev/random of=\$dirname/\${index}.data bs=1 count=0 seek=$size
