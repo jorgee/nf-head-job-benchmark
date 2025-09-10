@@ -1,0 +1,4 @@
+s3://jorgee-eu-west1-test2/test-data/2/cp/upload-1G/
+s3://jorgee-eu-west1-test2/test-data/3/cp/upload-1G/
+s3://jorgee-eu-west1-test2/test-data/4/cp/upload-1G/
+s3://jorgee-eu-west1-test2/test-data/5/cp/upload-1G/
