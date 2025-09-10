@@ -21,6 +21,7 @@ params.meta_download_trials = 1
 params.meta_upload = false
 params.meta_upload_extended = false
 params.meta_upload_dir = false
+params.meta_upload_big = false
 params.meta_upload_tasks = [1]
 params.meta_upload_counts = [50]
 params.meta_upload_sizes = ['1G']
@@ -35,8 +36,9 @@ params.upload_size = '10G'
 params.upload_prefix = 's3://jorgee-eu-west1-test1/test-data'
 params.upload_trial = 1
 
-params.meta_fs = false
+params.meta_fs_files = false
 params.meta_fs_dir = false
+params.meta_fs_big = false
 params.meta_fs_trials = 5
 params.fs_origin = 's3://jorgee-eu-west1-test1/fs-origin-data/test-data'
 params.fs_prefix = 's3://jorgee-eu-west1-test2/test-data'
@@ -44,6 +46,7 @@ params.meta_fs_dir_counts = [50]
 params.meta_fs_dir_sizes = ['1G']
 params.meta_fs_counts = [50]
 params.meta_fs_sizes = ['1G']
+params.meta_fs_big_sizes = ['50G']
 
 process download_file {
     input:
@@ -261,7 +264,68 @@ process upload_meta_dir {
     """
 }
 
-process fs_meta {
+process fs_meta_big {
+    label 'meta'
+    tag { "vt=${virtual_threads} size=${size} dir_concurrency=${dir_concurrency}" }
+
+    input:
+    each size
+    each virtual_threads
+    each dir_concurrency
+    each trial
+    script:
+    """
+    # print java memory options
+    java -XX:+PrintFlagsFinal -version | grep 'HeapSize\\|RAM'
+    # force virtual threads setting to be applied
+    rm -f /.nextflow/launch-classpath
+
+    # run pipeline
+    set +e
+    export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
+    echo \"aws.region='eu-west-1'\" >> nextflow.config
+    if [ '${dir_concurrency}' != 'none' ]; then
+        echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
+    fi
+    echo 'Remove...'
+    time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/cp/*
+    time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
+    
+    echo 'copy file...'
+    time nextflow fs cp ${params.fs_origin}-1-${size}/upload-${size}-1.data ${params.fs_prefix}/$trial/cp/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+
+    echo 'download file...'
+    time nextflow fs cp ${params.fs_origin}-1-${size}/upload-${size}-1.data .
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+    
+    echo 'upload file...'
+    time nextflow fs cp upload-${size}-1.data ${params.fs_prefix}/$trial/up/
+    RESULT=\$?
+    if [ \$RESULT -eq 0 ]; then
+      echo success
+    else
+      cat .nextflow.log
+      exit \$RESULT
+    fi
+    echo 'removing...'
+    time rm upload-50G-1.data
+    """
+}
+
+process fs_meta_files {
     label 'meta'
     tag { "vt=${virtual_threads} count=${count} size=${size} dir_concurrency=${dir_concurrency}" }
 
@@ -283,18 +347,12 @@ process fs_meta {
     set +e
     export NXF_ENABLE_VIRTUAL_THREADS=${virtual_threads}
     echo \"aws.region='eu-west-1'\" >> nextflow.config
+    if [ '${dir_concurrency}' != 'none' ]; then
+        echo \"aws.client.transferDirectoryMaxConcurrency=${dir_concurrency}\" >> nextflow.config
+    fi
     echo 'Remove...'
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/cp/*
     time nextflow -trace nextflow fs rm ${params.fs_prefix}/$trial/up/*
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      cat .nextflow.log
-      exit \$RESULT
-    fi
-    echo 'copy file...'
-    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-${size}-${count}.data ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -320,27 +378,8 @@ process fs_meta {
       cat .nextflow.log
       exit \$RESULT
     fi
-    echo 'download file...'
-    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-${size}-${count}.data .
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      cat .nextflow.log
-      exit \$RESULT
-    fi
-    echo 'upload file...'
-    time nextflow fs cp upload-${size}-${count}.data ${params.fs_prefix}/$trial/up/
-    RESULT=\$?
-    if [ \$RESULT -eq 0 ]; then
-      echo success
-    else
-      cat .nextflow.log
-      exit \$RESULT
-    fi
-    echo 'removing...'
-    time rm upload-50G-1.data
-    mkdir up-1G-files
+    
+    mkdir up-${size}-files
     echo 'downloading files...'
     time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-${size}/* \$PWD/up-${size}-files/
     RESULT=\$?
@@ -360,7 +399,7 @@ process fs_meta {
       exit \$RESULT
     fi
     echo 'removing...'
-    time rm -rf up-1G-files
+    time rm -rf up-${size}-files
     """
 }
 
@@ -462,6 +501,11 @@ workflow {
             upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem, ch_trials)
         }
     }
+    if ( params.meta_upload_big ) {
+        ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
+        ch_trials = Channel.of(1 .. params.meta_upload_trials)
+        upload_meta_big(Channel.fromList([1]), Channel.fromList([1]), Channel.fromList(params.meta_upload_big_sizes), ch_virtual_threads, ch_dir_concurrency, ch_trials)
+    }
     if ( params.meta_upload_dir ) {
         ch_tasks = Channel.fromList(params.meta_upload_tasks)
         ch_counts = Channel.fromList(params.meta_upload_counts)
@@ -475,13 +519,20 @@ workflow {
         upload_meta_dir(ch_tasks, ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_throughput, ch_concurrency, ch_max_native_mem, ch_trials)
     }
 
-    if ( params.meta_fs ) {
+    if ( params.meta_fs_big ) {
+        ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
+        ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
+        ch_sizes = Channel.fromList(params.meta_fs_sizes)
+        ch_trials = Channel.of(1 .. params.meta_fs_trials)
+        fs_meta_big( ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_trials)
+    }
+    if ( params.meta_fs_files ) {
         ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_counts = Channel.fromList(params.meta_fs_counts)
-        ch_sizes = Channel.fromList(params.meta_fs_sizes)
+        ch_sizes = Channel.fromList(params.meta_fs_big_sizes)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
-        fs_meta(ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_trials)
+        fs_meta_files(ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_trials)
     }
     if ( params.meta_fs_dir ) {
         ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
