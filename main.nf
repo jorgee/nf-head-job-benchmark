@@ -427,7 +427,7 @@ process fs_meta_dir {
     fi
     rm -rf \$dirname
     echo 'downloading dir $count $size...'
-    time nextflow -trace nextflow fs cp ${params.fs_prefix}/$trial/up/\$dirname . 
+    time nextflow fs cp ${params.fs_prefix}/$trial/up/\$dirname . 
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
