@@ -226,7 +226,7 @@ process upload_meta_dir {
         echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
     fi
     if [ '${max_native_mem}' != 'none' ]; then
-        echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
+        echo \"aws.client.maxNativeMemory='${max_native_mem}'\" >> nextflow.config
     fi
     # force virtual threads setting to be applied
     rm -f /.nextflow/launch-classpath
@@ -404,7 +404,7 @@ process fs_meta_dir {
         echo \"aws.client.maxConcurrency=${max_concurrency}\" >> nextflow.config
     fi
     if [ '${max_native_mem}' != 'none' ]; then
-        echo \"aws.client.maxNativeMemory=${max_native_mem}\" >> nextflow.config
+        echo \"aws.client.maxNativeMemory='${max_native_mem}'\" >> nextflow.config
     fi
     
     cat nextflow.config
