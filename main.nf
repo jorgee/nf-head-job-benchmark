@@ -522,15 +522,15 @@ workflow {
     if ( params.meta_fs_big ) {
         ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
-        ch_sizes = Channel.fromList(params.meta_fs_sizes)
-        ch_trials = Channel.of(1 .. params.meta_fs_trials)
+        ch_sizes = Channel.fromList(params.meta_fs_big_sizes)
+        ch_trials = Channel.of(1 .. params.meta_fs_big_trials)
         fs_meta_big( ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_trials)
     }
     if ( params.meta_fs_files ) {
         ch_dir_concurrency = Channel.fromList(params.meta_directory_max_concurrency)
         ch_virtual_threads = Channel.fromList(params.meta_virtual_threads_values)
         ch_counts = Channel.fromList(params.meta_fs_counts)
-        ch_sizes = Channel.fromList(params.meta_fs_big_sizes)
+        ch_sizes = Channel.fromList(params.meta_fs_sizes)
         ch_trials = Channel.of(1 .. params.meta_fs_trials)
         fs_meta_files(ch_counts, ch_sizes, ch_virtual_threads, ch_dir_concurrency, ch_trials)
     }
