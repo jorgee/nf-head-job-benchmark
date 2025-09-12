@@ -361,7 +361,7 @@ process fs_meta_files {
       exit \$RESULT
     fi
     echo 'copy files...'
-    time nextflow fs cp '${params.fs_origin}-${count}-${size}/upload-${size}/*' ${params.fs_prefix}/$trial/cp/
+    time nextflow fs cp '${params.fs_origin}-${count}-${size}/upload-dir-1-${size}/*' ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -370,7 +370,7 @@ process fs_meta_files {
       exit \$RESULT
     fi
     echo 'copy dir...'
-    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-${size} ${params.fs_prefix}/$trial/cp/
+    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-dir-1-${size} ${params.fs_prefix}/$trial/cp/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
@@ -381,7 +381,7 @@ process fs_meta_files {
     
     mkdir up-${size}-files
     echo 'downloading files...'
-    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-${size}/* \$PWD/up-${size}-files/
+    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-dir-1${size}/* \$PWD/up-${size}-files/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
