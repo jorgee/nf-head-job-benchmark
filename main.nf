@@ -381,7 +381,7 @@ process fs_meta_files {
     
     mkdir up-${size}-files
     echo 'downloading files...'
-    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-dir-1${size}/* \$PWD/up-${size}-files/
+    time nextflow fs cp ${params.fs_origin}-${count}-${size}/upload-dir-1-${size}/* \$PWD/up-${size}-files/
     RESULT=\$?
     if [ \$RESULT -eq 0 ]; then
       echo success
